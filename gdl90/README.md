@@ -1,3 +1,6 @@
+### Note
+This folder is a modified (for Python 3) partial fork of https://github.com/etdey/gdl90
+
 # GDL 90 Decoder and Encoder
 
 This package is a set of tools and libraries for decoding and encoding the GDL
