@@ -1,0 +1,39 @@
+To set up Stratux to connect to WiFi while also acting as a hot spot (using second WiFi adapter):
+https://www.reddit.com/r/stratux/comments/70pmmt/guide_turn_your_stratux_into_a_internet/
+  NOTE:  wasn't able to get the Pi to act as a passthrough, but will still connect to one and act as AP on another)
+
+To install rtl-ais:
+Follow instructions at:
+https://github.com/dgiardini/rtl-ais
+
+$ # Get the source code:
+$ git clone https://github.com/dgiardini/rtl-ais
+$ # Change to the source dir
+$ cd rtl-ais
+$ make
+$ # Test running the command
+$ ./rtl_ais
+
+#use rtl-sdr device index 2, Receive AIS traffic,sent UDP NMEA sentences to 127.0.0.1 port 10110 and log the senteces to console 
+./rtl_ais -n -d 2  
+
+AIS sentence decoding in Python:
+https://github.com/M0r13n/pyais
+
+install pip3:  sudo apt-get instal python3-pip
+install pyais: pip3 install pyais
+
+/home/pi/.local/bin/ais-decode
+
+GDL90:
+git clone https://github.com/etdey/gdl90.git
+(no install needed)
+
+sudo apt-get install 2to3
+2to3 -w gdl90
+
+https://gpsd.gitlab.io/gpsd/AIVDM.html#_type_5_static_and_voyage_related_data
+https://fossies.org/linux/gpsd/test/sample.aivdm
+
+
+
