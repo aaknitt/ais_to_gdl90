@@ -2,6 +2,7 @@
 A small script to receive AIS data (via rtl-ais) via one UDP port, translate it to GDL90 data, and transmit the GDL90 data out on a different UDP port.
 
 Allows vessel locations reported via AIS to be shown as "traffic" on EFB applications such as ForeFlight, etc.  
+![Sample Screenshot](/images/File_000.png)
 
 ## Setup
 A source of VHF AIS data is required.  As-is, this script is set up to receive AIS data provided from an RTL SDR dongle by [rtl-ais](https://github.com/dgiardini/rtl-ais) via a UDP port.  
