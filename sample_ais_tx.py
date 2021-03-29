@@ -1,6 +1,7 @@
 import socket
 
 UDP_IP = "127.0.0.1"
+UDP_IP = "192.168.1.202"
 UDP_PORT = 10110
 #sample AIVDM NMEA messages:
 #https://fossies.org/linux/gpsd/test/sample.aivdm
