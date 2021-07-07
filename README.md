@@ -21,11 +21,15 @@ https://github.com/M0r13n/pyais
 
 install pip3 (not installed by default on a Stratux):
 ```
-sudo apt-get instal python3-pip
+sudo apt-get install python3-pip
 ```
 install pyais:
 ```
 pip3 install pyais
+```
+PySerial is needed to get AIS data from a serial port source such as a dAISy receiver (instead of rtl-ais)
+```
+pip3 install pyserial
 ```
 A partial fork of the [gdl90](https://github.com/etdey/gdl90) library is used to encode the gdl90 data.  This partial fork is included in this repository, so installing it separately is not required.  Modifications were made to adapt it for compatibility with Python 3 since the pyais library requires Python 3.  
 ## Running
@@ -37,6 +41,11 @@ Once rtl-ais is running, this script can be run with:
 ```
 python3 ais_to_gdl90.py
 ```
+Or to run using a serial port AIS receiver (instead of rtl-ais):
+``` 
+python3 ais_to_gdl90.py --SerialPortName /dev/ttyUSB0 --SerialPortBaud 38400
+```
+
 ## Limitations
 * The GDL90 data format only allocates 8 ASCII characters for the "callsign" field so vessel names received via AIS will be truncated to 8 characters when sent via GDL90
 * AIS data does not included altitude.  GDL90 data is currently populated with an altitude of 0 ft MSL.  
