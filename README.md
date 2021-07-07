@@ -1,14 +1,12 @@
 # ais_to_gdl90
-A small script to receive AIS data (via rtl-ais) via one UDP port, translate it to GDL90 data, and transmit the GDL90 data out on a different UDP port.
+A small script to receive AIS data (via a UDP port from rtl-ais or via a serial port NMEA data), translate it to GDL90 data, and transmit the GDL90 data out on a UDP port.
 
 Allows vessel locations reported via AIS to be shown as "traffic" on EFB applications such as ForeFlight, etc.  
 
 <img src="/images/File_000.png" width="30%" height="30%">
 
 ## Setup
-A source of VHF AIS data is required.  As-is, this script is set up to receive AIS data provided from an RTL SDR dongle by [rtl-ais](https://github.com/dgiardini/rtl-ais) via a UDP port.  
-
-Modifcations could be made to get AIS data from a different source such as a [dAISy HAT](https://shop.wegmatt.com/products/daisy-hat-ais-receiver?variant=7103554977828) (data via serial port rather than UDP).
+A source of VHF AIS data is required.  As-is, this script is set up to receive AIS data provided from an RTL SDR dongle by [rtl-ais](https://github.com/dgiardini/rtl-ais) via a UDP port or from NMEA serial data from a receiver such as the [dAISy HAT](https://shop.wegmatt.com/products/daisy-hat-ais-receiver?variant=7103554977828).
 
 rtl-ais and this script can be installed on a Stratux or a standalone Raspberry Pi used only for VHF AIS reception.  If installed on a Stratux, an additional SDR dongle used to receive the VHF AIS data is required.  If installed on another Pi, that second Pi should be connected to the Stratux WiFi network.  
 
