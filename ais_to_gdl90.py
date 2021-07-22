@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 from pyais.stream import UDPStream
+from pyais.messages import NMEAMessage
+from pyais.decode import decode
 import time
 import os
 import socket
@@ -125,7 +127,7 @@ def send_gdl90():
 				#only send AIS data if it's been received within that last three minutes
 				#send a GDL90 message out via UDP message - AIS data gets loaded into GDL90 message
 				if callsign == "BADGER":
-					sendlat = data['lat'] + .2
+					sendlat = data['lat'] + .02
 				else:
 					sendlat = data['lat']
 				buf = encoder.msgTrafficReport(latitude=sendlat, longitude=data['lon'],altitude=0, hVelocity=data['speed'], vVelocity=0, trackHeading=data['course'], callSign=callsign, address=address,emitterCat=18)
@@ -175,15 +177,17 @@ def handle_ais_data(data):
 
 if SerialPortName != '':
 	try:
-		s = serial.Serial( SerialPortName, SerialPortBaud, timeout=1 )
+		serial = serial.Serial( SerialPortName, SerialPortBaud, timeout=1 )
 	except:
 		#kill the program - couldn't open the serial port
 		print("Unable to open the serial port " + SerialPortName + " - unable to proceed - exiting")
 		os._exit(1)
 	while True:
-		line = s.readline()
-		if line != '':
-			data = decode_msg(line)
+		line = serial.readline()
+		if line != b'':
+			print(line)
+			message = NMEAMessage(line)
+			data = decode(message)
 			handle_ais_data(data)
 
 	
