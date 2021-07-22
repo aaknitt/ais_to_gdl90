@@ -43,6 +43,19 @@ Or to run using a serial port AIS receiver (instead of rtl-ais):
 ``` 
 python3 ais_to_gdl90.py --SerialPortName /dev/ttyUSB0 --SerialPortBaud 38400
 ```
+## Persistant device names when using multiple USB serial devices
+On a Stratux it's common to have multiple devices that act as USB serial ports (GPS and UAT receivers, for example).  When adding an AIS receiver (such as a dAISy), the /dev/ttyUSBx or /dev/ttyACMx names that the OS gives to each device may vary on startup.  The best way to address this is to create udev rules that create a persistant symlink name for your AIS receiver.  The process is explained well [here](http://hintshop.ludvig.co.nz/show/persistent-names-usb-serial-devices/).
+
+As an example, the udev rule that I created for my dAISy reciever (this line is placed in the file /etc/udev/rules.d/99-usb-serial.rules) looks like this:
+```
+SUBSYSTEM=="tty", ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="0b03", SYMLINK+="dAISy"
+```
+My startup script (that I start automatically on boot via a crontab entry) then looks like this:
+```
+cd /home/pi/gdl90
+screen -dmS ais-to-adsb-screen python3 ais_to_gdl90.py --SerialPortName /dev/dAISy
+```
+Note that in this example I'm use the 'screen' utility to allow me to easily connect and monitor the script via SSH, but that's not required.  
 
 ## Limitations
 * The GDL90 data format only allocates 8 ASCII characters for the "callsign" field so vessel names received via AIS will be truncated to 8 characters when sent via GDL90
