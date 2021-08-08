@@ -10,6 +10,7 @@ import random
 import json
 import _thread
 import serial
+import serial.tools.list_ports
 import argparse
 
 # Default values for options
@@ -28,8 +29,20 @@ parser.set_defaults(BROADCAST=0)
 
 args = parser.parse_args()
 BROADCAST = int(args.BROADCAST)
+
 SerialPortName = str(args.SerialPortName)
 SerialPortBaud = int(args.SerialPortBaud)
+
+if SerialPortName == '':
+	#No serial port specified, search for dAISy
+	serialPorts = serial.tools.list_ports.comports()
+	for serialPort in serialPorts:
+		if 'dAISy' in serialPort.description:
+			print("found dAISY on port " + serialPort.device)
+			SerialPortName = serialPort.device
+			SerialPortBaud = 38400
+else:
+	print("using serial port specified by argument " + SerialPortName)
 
 encoder = gdl90.encoder.Encoder()
 
@@ -82,11 +95,12 @@ except:
 
 positions = {}
 
-print("listening for AIS data on " + DEF_RX_ADDR + " port " + str(DEF_RX_PORT))
+
 print("Simulating Stratux unit.")
 
 for ip, port in broadcast_ips:
-	print(("Transmitting GLD90 data to %s:%s" % (ip, port)))
+	if BROADCAST == 1:
+		print(("Broadcasting GLD90 data to %s:%s" % (ip, port)))
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -174,10 +188,11 @@ def handle_ais_data(data):
 		mmsidict[data['mmsi']] = data['shipname']
 		with open('mmsi.json', 'w') as json_file:
 			json.dump(mmsidict, json_file)  #store vessel names for later use since they only get transmitted every 6 minutes
-
+			
 if SerialPortName != '':
 	try:
 		serial = serial.Serial( SerialPortName, SerialPortBaud, timeout=1 )
+		print("Opened the serial port - waiting for NMEA AIS data")
 	except:
 		#kill the program - couldn't open the serial port
 		print("Unable to open the serial port " + SerialPortName + " - unable to proceed - exiting")
@@ -193,6 +208,7 @@ if SerialPortName != '':
 	
 	
 else:
+	print("listening for AIS data on " + DEF_RX_ADDR + " port " + str(DEF_RX_PORT))
 	for msg in UDPStream(DEF_RX_ADDR, DEF_RX_PORT):
 		#AIS data comes in from rtl-ais via UDP port
 		print(msg)
