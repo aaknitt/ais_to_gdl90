@@ -140,10 +140,14 @@ def send_gdl90():
 				#print(address)
 				#only send AIS data if it's been received within that last three minutes
 				#send a GDL90 message out via UDP message - AIS data gets loaded into GDL90 message
-				if callsign == "BADGER":
+				'''
+				#This section is for testing when onboard the ferries - ForeFlight won't show traffic if it's in the exact same location
+				#as I am, so add in an artificial offset during testing
+				if callsign == "BADGER" or callsign =="LAKE EXP":
 					sendlat = data['lat'] + .02
 				else:
 					sendlat = data['lat']
+				'''
 				buf = encoder.msgTrafficReport(latitude=sendlat, longitude=data['lon'],altitude=0, hVelocity=data['speed'], vVelocity=0, trackHeading=data['course'], callSign=callsign, address=address,emitterCat=18)
 				#print(int(mmsi[-6:]))
 				#buf = encoder.msgTrafficReport(latitude=data['lat'], longitude=data['lon'],altitude=0, hVelocity=data['speed'], vVelocity=0, trackHeading=data['course'], callSign=callsign, address=int(mmsi[-6:]),emitterCat=18)
@@ -202,8 +206,11 @@ if SerialPortName != '':
 		if line != b'':
 			print(line)
 			message = NMEAMessage(line)
-			data = decode(message)
-			handle_ais_data(data)
+			try:
+				data = decode(message)
+				handle_ais_data(data)
+			except:
+				pass  #prevent crashing when an unsupported AIS message is received
 
 	
 	
