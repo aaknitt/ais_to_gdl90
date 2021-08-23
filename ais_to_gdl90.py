@@ -12,6 +12,29 @@ import _thread
 import serial
 import serial.tools.list_ports
 import argparse
+import logging
+
+# create logger
+logger = logging.getLogger('')
+logger.setLevel(logging.DEBUG)
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+
+#create file handler and set level to debug
+fh = logging.FileHandler('log' + str(time.time()).replace('.','_') + '.txt',mode='w')
+fh.setLevel(logging.DEBUG)
+# create formatter
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+# add formatter to ch
+ch.setFormatter(formatter)
+fh.setFormatter(formatter)
+
+# add ch and fh to logger
+logger.addHandler(ch)
+logger.addHandler(fh)
 
 # Default values for options
 #DEF_TX_ADDR="192.168.10.255"
@@ -38,11 +61,13 @@ if SerialPortName == '':
 	serialPorts = serial.tools.list_ports.comports()
 	for serialPort in serialPorts:
 		if 'dAISy' in serialPort.description:
-			print("found dAISY on port " + serialPort.device)
+			#print("found dAISY on port " + serialPort.device)
+			logger.info("found dAISY on port " + serialPort.device)
 			SerialPortName = serialPort.device
 			SerialPortBaud = 38400
 else:
-	print("using serial port specified by argument " + SerialPortName)
+	#print("using serial port specified by argument " + SerialPortName)
+	logger.info("using serial port specified by argument " + SerialPortName)
 
 encoder = gdl90.encoder.Encoder()
 
@@ -83,7 +108,8 @@ for ip in ips:
 	broadcast_ip = ".".join(split)
 	broadcast_ips.append([broadcast_ip, DEF_TX_PORT])
 	
-print(broadcast_ips)
+#print(broadcast_ips)
+logging.debug(broadcast_ips)
 
 foreflight_ips = []
 
@@ -96,11 +122,13 @@ except:
 positions = {}
 
 
-print("Simulating Stratux unit.")
+#print("Simulating Stratux unit.")
+logging.info("Simulating Stratux unit.")
 
 for ip, port in broadcast_ips:
 	if BROADCAST == 1:
-		print(("Broadcasting GLD90 data to %s:%s" % (ip, port)))
+		#print(("Broadcasting GLD90 data to %s:%s" % (ip, port)))
+		logging.info(("Broadcasting GLD90 data to %s:%s" % (ip, port)))
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -128,7 +156,8 @@ def send_gdl90():
 		sendtolist(buf,broadcast_ips,foreflight_ips,BROADCAST)		#Send AIS position reports
 		#print(time.time())
 		for mmsi in positions:
-			print(mmsi)
+			#print(mmsi)
+			#logging.debug(mmsi)
 			data = positions[mmsi][0]
 			callsign = positions[mmsi][2]
 			timestamp = positions[mmsi][1]
@@ -149,6 +178,7 @@ def send_gdl90():
 					sendlat = data['lat']
 				'''
 				buf = encoder.msgTrafficReport(latitude=sendlat, longitude=data['lon'],altitude=0, hVelocity=data['speed'], vVelocity=0, trackHeading=data['course'], callSign=callsign, address=address,emitterCat=18)
+				logging.debug(buf)
 				#print(int(mmsi[-6:]))
 				#buf = encoder.msgTrafficReport(latitude=data['lat'], longitude=data['lon'],altitude=0, hVelocity=data['speed'], vVelocity=0, trackHeading=data['course'], callSign=callsign, address=int(mmsi[-6:]),emitterCat=18)
 				sendtolist(buf,broadcast_ips,foreflight_ips,BROADCAST)				#print(buf)
@@ -158,7 +188,8 @@ def rx_foreflight(ip):
 	global foreflight_ips
 	UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 	UDPServerSocket.bind((ip,63093))
-	print("listening for ForeFlight heartbeats on " + ip + " port 63093")
+	#print("listening for ForeFlight heartbeats on " + ip + " port 63093")
+	logging.info("listening for ForeFlight heartbeats on " + ip + " port 63093")
 	while(True):
 		bytesAddressPair = UDPServerSocket.recvfrom(1024)
 		message = bytesAddressPair[0]
@@ -169,8 +200,10 @@ def rx_foreflight(ip):
 		if json_msg['App'] == 'ForeFlight':
 			if [address[0],json_msg['GDL90']['port']] not in foreflight_ips:
 				foreflight_ips.append([address[0],json_msg['GDL90']['port']])
-				print("Adding ForeFlight client at " + address[0] + " port " + str(json_msg['GDL90']['port']))
-				print(foreflight_ips)
+				#print("Adding ForeFlight client at " + address[0] + " port " + str(json_msg['GDL90']['port']))
+				#print(foreflight_ips)
+				logging.info("Adding ForeFlight client at " + address[0] + " port " + str(json_msg['GDL90']['port']))
+				logging.debug(foreflight_ips)
 
 _thread.start_new_thread(send_gdl90,())
 for ip, port in broadcast_ips:
@@ -185,7 +218,8 @@ def handle_ais_data(data):
 		else:
 			callsign = str(data['mmsi'])[0:8]
 		positions[data['mmsi']] = [data,time.time(),callsign]
-		print(positions[data['mmsi']])
+		#print(positions[data['mmsi']])
+		logging.debug(positions[data['mmsi']])
 		
 	elif data['type'] == 5:
 		#it's a ship static report - this is where we get vessel name and link it to the MMSI
@@ -196,15 +230,18 @@ def handle_ais_data(data):
 if SerialPortName != '':
 	try:
 		serial = serial.Serial( SerialPortName, SerialPortBaud, timeout=1 )
-		print("Opened the serial port - waiting for NMEA AIS data")
+		#print("Opened the serial port - waiting for NMEA AIS data")
+		logging.info("Opened the serial port - waiting for NMEA AIS data")
 	except:
 		#kill the program - couldn't open the serial port
-		print("Unable to open the serial port " + SerialPortName + " - unable to proceed - exiting")
+		#print("Unable to open the serial port " + SerialPortName + " - unable to proceed - exiting")
+		logging.info("Unable to open the serial port " + SerialPortName + " - unable to proceed - exiting")
 		os._exit(1)
 	while True:
 		line = serial.readline()
 		if line != b'':
-			print(line)
+			#print(line)
+			logging.debug(line)
 			message = NMEAMessage(line)
 			try:
 				data = decode(message)
@@ -215,12 +252,17 @@ if SerialPortName != '':
 	
 	
 else:
-	print("listening for AIS data on " + DEF_RX_ADDR + " port " + str(DEF_RX_PORT))
+	#print("listening for AIS data on " + DEF_RX_ADDR + " port " + str(DEF_RX_PORT))
+	logging.info("listening for AIS data on " + DEF_RX_ADDR + " port " + str(DEF_RX_PORT))
 	for msg in UDPStream(DEF_RX_ADDR, DEF_RX_PORT):
 		#AIS data comes in from rtl-ais via UDP port
-		print(msg)
-		data = msg.decode()
-		#print(data)
-		handle_ais_data(data)
+		#print(msg)
+		logging.debug(msg)
+		try:
+			data = msg.decode()
+			#print(data)
+			handle_ais_data(data)
+		except:
+			pass  #prevent crashing when an unsupported AIS message is received
 			
 
