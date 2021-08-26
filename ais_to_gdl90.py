@@ -49,9 +49,12 @@ parser.add_argument('--SerialPortBaud',dest='SerialPortBaud', help='Baud rate of
 parser.set_defaults(SerialPortBaud=38400)
 parser.add_argument('--Broadcast',dest='BROADCAST', help='Set to 1 to send ADS-B data via UDP broadcast in addition to unicast to detected ForeFlight instances')
 parser.set_defaults(BROADCAST=0)
+parser.add_argument('--dAISyTest',dest='dAISyTest', help='Set to 1 to put dAISy AIS receiver into test mode and have it send an AIS message every 5 seconds')
+parser.set_defaults(dAISyTest=0)
 
 args = parser.parse_args()
 BROADCAST = int(args.BROADCAST)
+dAISyTest = int(args.dAISyTest)
 
 SerialPortName = str(args.SerialPortName)
 SerialPortBaud = int(args.SerialPortBaud)
@@ -169,16 +172,17 @@ def send_gdl90():
 				#print(address)
 				#only send AIS data if it's been received within that last three minutes
 				#send a GDL90 message out via UDP message - AIS data gets loaded into GDL90 message
+				sendlat = data['lat']
+				sendlon = data['lon']
 				'''
 				#This section is for testing when onboard the ferries - ForeFlight won't show traffic if it's in the exact same location
 				#as I am, so add in an artificial offset during testing
 				if callsign == "BADGER" or callsign =="LAKE EXP":
 					sendlat = data['lat'] + .02
-				else:
-					sendlat = data['lat']
 				'''
-				buf = encoder.msgTrafficReport(latitude=sendlat, longitude=data['lon'],altitude=0, hVelocity=data['speed'], vVelocity=0, trackHeading=data['course'], callSign=callsign, address=address,emitterCat=18)
-				logging.debug(buf)
+				
+				buf = encoder.msgTrafficReport(latitude=sendlat, longitude=sendlon,altitude=0, hVelocity=data['speed'], vVelocity=0, trackHeading=data['course'], callSign=callsign, address=address,emitterCat=18)
+				#logging.debug(buf)
 				#print(int(mmsi[-6:]))
 				#buf = encoder.msgTrafficReport(latitude=data['lat'], longitude=data['lon'],altitude=0, hVelocity=data['speed'], vVelocity=0, trackHeading=data['course'], callSign=callsign, address=int(mmsi[-6:]),emitterCat=18)
 				sendtolist(buf,broadcast_ips,foreflight_ips,BROADCAST)				#print(buf)
@@ -211,6 +215,7 @@ for ip, port in broadcast_ips:
 
 def handle_ais_data(data):
 	global positions, mmsidict
+	print(data)
 	if data['type'] in [1,2,3]:
 		#it's a position report
 		if data['mmsi'] in mmsidict:
@@ -237,6 +242,11 @@ if SerialPortName != '':
 		#print("Unable to open the serial port " + SerialPortName + " - unable to proceed - exiting")
 		logging.info("Unable to open the serial port " + SerialPortName + " - unable to proceed - exiting")
 		os._exit(1)
+	if dAISyTest == 1:
+		serial.write(b'\x27')
+		time.sleep(.1)
+		serial.write(b'T')
+		serial.write(b'\x0D')
 	while True:
 		line = serial.readline()
 		if line != b'':
