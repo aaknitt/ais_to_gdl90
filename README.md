@@ -41,9 +41,9 @@ Once rtl-ais is running (or if a dAISy is connected), this script can be run wit
 ```
 python3 ais_to_gdl90.py
 ```
-Or to manually specify the serial port to use with an external AIS receiver (other than the dAISy):
+Or to manually specify the serial port to use with an external AIS receiver:
 ``` 
-python3 ais_to_gdl90.py --SerialPortName /dev/ttyUSB0 --SerialPortBaud 38400
+python3 ais_to_gdl90.py --SerialPortName /dev/serial0 --SerialPortBaud 38400
 ```
 ## Limitations
 * The GDL90 data format only allocates 8 ASCII characters for the "callsign" field so vessel names received via AIS will be truncated to 8 characters when sent via GDL90
