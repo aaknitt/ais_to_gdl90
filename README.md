@@ -8,7 +8,7 @@ Allows vessel locations reported via AIS to be shown as "traffic" on EFB applica
 ## Setup
 A source of VHF AIS data is required.  As-is, this script is set up to receive AIS data provided from an RTL SDR dongle by [rtl-ais](https://github.com/dgiardini/rtl-ais) or [aisdeco2](http://xdeco.org/) via a UDP port or from NMEA serial data from a receiver such as the [dAISy HAT](https://shop.wegmatt.com/products/daisy-hat-ais-receiver?variant=7103554977828).
 
-By default, the script will attempt to auto-detect a dAISy NMEA serial port AIS receiver on startup.  If it cannot find one, it will open up a UDP port and wait for AIS data from rtl-ais, aiseco2, or any other source.  A serial port can also be manually specified using command line arguments.  If you'd like to see auto-detect support for a serial port AIS receiver other than the dAISy please let me know.  
+By default, the script will attempt to auto-detect a USB dAISy NMEA serial port AIS receiver on startup.  If it cannot find one, it will open up a UDP port and wait for AIS data from rtl-ais, aiseco2, or any other source.  A serial port can also be manually specified using command line arguments (use this when using a dAISy hat, for example).  If you'd like to see auto-detect support for a USB serial port AIS receiver other than the dAISy please let me know.  
 
 rtl-ais and this script can be installed on a Stratux or a standalone Raspberry Pi used only for VHF AIS reception.  If installed on a Stratux, an additional SDR dongle used to receive the VHF AIS data is required.  If installed on another Pi, that second Pi should be connected to the Stratux WiFi network.  
 
