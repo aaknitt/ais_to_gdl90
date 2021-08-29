@@ -49,12 +49,9 @@ parser.add_argument('--SerialPortBaud',dest='SerialPortBaud', help='Baud rate of
 parser.set_defaults(SerialPortBaud=38400)
 parser.add_argument('--Broadcast',dest='BROADCAST', help='Set to 1 to send ADS-B data via UDP broadcast in addition to unicast to detected ForeFlight instances')
 parser.set_defaults(BROADCAST=0)
-parser.add_argument('--dAISyTest',dest='dAISyTest', help='Set to 1 to put dAISy AIS receiver into test mode and have it send an AIS message every 5 seconds')
-parser.set_defaults(dAISyTest=0)
 
 args = parser.parse_args()
 BROADCAST = int(args.BROADCAST)
-dAISyTest = int(args.dAISyTest)
 
 SerialPortName = str(args.SerialPortName)
 SerialPortBaud = int(args.SerialPortBaud)
@@ -167,9 +164,6 @@ def send_gdl90():
 			if time.time()-timestamp < 180:
 				#address = random.randrange(0,2**24)
 				address=int(mmsi[-6:])
-				#address = 7760443  #VALID
-				# not valid:  5750039  
-				#print(address)
 				#only send AIS data if it's been received within that last three minutes
 				#send a GDL90 message out via UDP message - AIS data gets loaded into GDL90 message
 				sendlat = data['lat']
@@ -216,7 +210,7 @@ for ip, port in broadcast_ips:
 def handle_ais_data(data):
 	global positions, mmsidict
 	print(data)
-	if data['type'] in [1,2,3]:
+	if data['type'] in [1,2,3,18,19,27]:
 		#it's a position report
 		if data['mmsi'] in mmsidict:
 			callsign = mmsidict[data['mmsi']][0:8]
@@ -226,7 +220,7 @@ def handle_ais_data(data):
 		#print(positions[data['mmsi']])
 		logging.debug(positions[data['mmsi']])
 		
-	elif data['type'] == 5:
+	elif data['type'] in [5,24]:
 		#it's a ship static report - this is where we get vessel name and link it to the MMSI
 		mmsidict[data['mmsi']] = data['shipname']
 		with open('mmsi.json', 'w') as json_file:
@@ -242,21 +236,18 @@ if SerialPortName != '':
 		#print("Unable to open the serial port " + SerialPortName + " - unable to proceed - exiting")
 		logging.info("Unable to open the serial port " + SerialPortName + " - unable to proceed - exiting")
 		os._exit(1)
-	if dAISyTest == 1:
-		serial.write(b'\x27')
-		time.sleep(.1)
-		serial.write(b'T')
-		serial.write(b'\x0D')
 	while True:
 		line = serial.readline()
 		if line != b'':
 			#print(line)
-			logging.debug(line)
 			message = NMEAMessage(line)
 			try:
+				logging.debug(line)
 				data = decode(message)
 				handle_ais_data(data)
 			except:
+				logging.debug("unsupported message:")
+				loggin.debug(line)
 				pass  #prevent crashing when an unsupported AIS message is received
 
 	
