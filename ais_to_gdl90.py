@@ -247,7 +247,7 @@ if SerialPortName != '':
 				handle_ais_data(data)
 			except:
 				logging.debug("unsupported message:")
-				loggin.debug(line)
+				logging.debug(line)
 				pass  #prevent crashing when an unsupported AIS message is received
 
 	
