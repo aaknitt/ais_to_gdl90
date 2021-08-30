@@ -209,7 +209,7 @@ for ip, port in broadcast_ips:
 
 def handle_ais_data(data):
 	global positions, mmsidict
-	print(data)
+	logging.debug(data)
 	if data['type'] in [1,2,3,18,19,27]:
 		#it's a position report
 		if data['mmsi'] in mmsidict:
@@ -218,10 +218,14 @@ def handle_ais_data(data):
 			callsign = str(data['mmsi'])[0:8]
 		positions[data['mmsi']] = [data,time.time(),callsign]
 		#print(positions[data['mmsi']])
-		logging.debug(positions[data['mmsi']])
+		#logging.debug(positions[data['mmsi']])
 		
 	elif data['type'] in [5,24]:
 		#it's a ship static report - this is where we get vessel name and link it to the MMSI
+		#NOTE - multiline messages are not handled properly - only the data from the first line will be available
+		#this is an issue that should get fixed but isn't currently hurting 
+		#anything since the only data we care about in a Type 5 is the
+		#vessel name and that is in the first line which gets decoded
 		mmsidict[data['mmsi']] = data['shipname']
 		with open('mmsi.json', 'w') as json_file:
 			json.dump(mmsidict, json_file)  #store vessel names for later use since they only get transmitted every 6 minutes
@@ -246,9 +250,14 @@ if SerialPortName != '':
 				data = decode(message)
 				handle_ais_data(data)
 			except:
+				#prevent crashing when an unsupported AIS message is received
+				#this currently happens for any multiline message such as Type 5
+				#this is an issue that should get fixed but isn't currently hurting 
+				#anything since the only data we care about in a Type 5 is the
+				#vessel name and that is in the first line which gets decoded
 				logging.debug("unsupported message:")
 				logging.debug(line)
-				pass  #prevent crashing when an unsupported AIS message is received
+				pass  
 
 	
 	
